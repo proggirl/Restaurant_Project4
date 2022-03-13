@@ -6,13 +6,11 @@ namespace Restaurant_Project4
 {
     public class Cook    
     {
-    public delegate (List<string>,string) Processed(TableRequests r);
-    public event Processed ProcessedEvent;
-    public (List<string>,string)? onProcessedEvent(TableRequests requests)
-    {
-        return ProcessedEvent?.Invoke(requests);
-    }
-    public (List<string>, string)? Process(TableRequests requests)
+    public delegate void Processed(TableRequests r); 
+      
+    public event Processed ProcessedEvent; 
+   
+    public void Process(TableRequests requests)
         {
             var chickens = requests.Get<Chicken>();
             foreach (var ch in chickens)
@@ -28,7 +26,7 @@ namespace Restaurant_Project4
                 e.DiscardShells();
                 e.Cook();                
             }
-            return onProcessedEvent(requests);
+            ProcessedEvent(requests); 
         }
     }
 }

@@ -12,11 +12,39 @@ namespace Restaurant_Project4
 {
     public partial class Form1 : Form
     {
+        public Server server = new Server();
+        public Cook cook = new Cook();
+        public List<string> list = new List<string>();
+            
         public Form1()
         {
             InitializeComponent();
+            server.ReadyEvent += cook.Process;
+            cook.ProcessedEvent += (TableRequests r) =>
+            {
+
+                listBox1.Items.Clear();
+                label5.Text = "";
+                try
+                {
+                    var (strs, quality) = server.ServeAll(r);
+                    foreach (var s in strs)
+                    {
+                        if (!string.IsNullOrEmpty(s))
+                        {
+                            listBox1.Items.Add(s);
+                        }
+
+                    }
+                    label5.Text = quality;
+                }
+                catch (Exception ex)
+                {
+                    server.requests = new TableRequests();
+                    listBox1.Items.Add(ex.Message);
+                }
+            };
         }
-        public Server server = new Server();
 
         private void button1_Click(object sender, EventArgs e)
         {
@@ -54,13 +82,8 @@ namespace Restaurant_Project4
             try
             {
                 listBox1.Items.Clear();
-                var (data, quality) = server.Send();
+                server.Send();               
                 
-                foreach(var item in data)
-                {
-                    listBox1.Items.Add(item);
-                }
-                label5.Text = quality;
             }
             catch (Exception ex)
             {
@@ -70,24 +93,7 @@ namespace Restaurant_Project4
 
         private void button3_Click(object sender, EventArgs e)
         {
-            try
-            {
-                listBox1.Items.Clear();
-                var (strs, quality) = server.ServeAll(server.requests);
-                foreach (var s in strs)
-                {
-                    if (!string.IsNullOrEmpty(s))
-                    {
-                        listBox1.Items.Add(s);
-                    }
-
-                }
-                label5.Text = quality;
-            }
-            catch (Exception ex)
-            {
-                listBox1.Items.Add(ex.Message);
-            }
+           
         }
     }
 }

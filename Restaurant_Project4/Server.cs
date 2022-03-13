@@ -8,19 +8,14 @@ namespace Restaurant_Project4
     public class Server
     {
         public TableRequests requests = new TableRequests();
-        Cook cook = new Cook();
+      
 
-        public delegate (List<string>, string)? Ready(TableRequests r);
+        public delegate void Ready(TableRequests r);
         public event Ready ReadyEvent;
 
-        public (List<string>, string)? OnReadyEvent()
-        {
-           return ReadyEvent?.Invoke(requests);
-        }
         public Server()
         {
-            ReadyEvent += cook.Process;
-            cook.ProcessedEvent += ServeAll;
+            
         }
         public void Receive(string customerName, int quantityChiken, int quantityEgg, string drink)
         {
@@ -35,64 +30,57 @@ namespace Restaurant_Project4
             GetMenuDrink(drink, customerName);
         }
 
-        public (List<string>, string) Send()
+        public void Send()
         {
-            List<string> result = new List<string>();
-           
-            foreach (var e in requests)
-            {
-                var customer = e.ToString();
-                string text = "Customer " + customer + " is served Drink ";
+            
 
-                var customerOrders = requests.GetMenuItemsCustomer(customer);
-
-                var d = customerOrders.Where(x =>
-                x.GetType() == typeof(RSCola) ||
-                x.GetType() == typeof(Lemonad) ||
-                x.GetType() == typeof(Tea) ||
-                x.GetType() == typeof(Coca_Cola) ||
-                x.GetType() == typeof(NotDrink)
-                ).FirstOrDefault();
-                string drink = (d != null) ? d.GetType().Name : " ";
-
-                if (!string.IsNullOrEmpty(drink))
-                {
-                    text += ", " + drink;
-                }
-                result.Add(text);
-            }
-
-            if (result.Any())
-            {
-                result.Add("Please enjoy your drink!");
-            }
-            else
-            {
-                result.Add("Please order any drink!");
-            }
-            result.Add("Orders sent to Cook ");
-            result.Add("Please wait ...");
-            result.Add("Orders are cooked!!!");
-            var (ls, q) = OnReadyEvent().Value;
-
-            result.AddRange(ls);
-            requests = new TableRequests();
-            return (result, q);
+            ReadyEvent(requests);
+            
         }
 
         public (List<string>, string) ServeAll(TableRequests requests)
         {
             List<string> result = new List<string>();
+            List<string> result1 = new List<string>();
+
+
+            
 
             foreach (var e in requests)
             {
                 var customer = e.ToString();
                 string text = "Customer " + customer + " is served ";
+                string textDrink = "Customer " + customer + " is served Drink ";
 
                 var customerOrders = requests.GetMenuItemsCustomer(customer);
 
-                int chickenCount = customerOrders.Where(x => x.GetType() == typeof(Chicken)).Count();
-                int eggCount = customerOrders.Where(x => x.GetType() == typeof(Egg)).Count();
+
+                string drink ="";
+                int eggCount = 0;
+                int chickenCount = 0;
+
+                foreach (var item in customerOrders)
+                {
+                    if (item.GetType() == typeof(Chicken))
+                    {
+                        chickenCount++;
+                    }
+                    else if (item.GetType() == typeof(Egg))
+                    {
+                        eggCount++;
+                    }
+                    else
+                    {
+                        drink = item.GetType().Name;
+                    }
+                }
+
+
+                if (!string.IsNullOrEmpty(drink))
+                {
+                    textDrink += ", " + drink;
+                }
+                result.Add(textDrink);
 
                 if (chickenCount > 0)
                 {
@@ -103,10 +91,15 @@ namespace Restaurant_Project4
                     text += ", Egg " + eggCount;
                 }
 
-                result.Add(text);
+                result1.Add(text);
             }
 
-            requests = new TableRequests();
+            if (result.Any())
+            {
+                result.Add("Please enjoy your drink!");
+            }
+            result.AddRange(result1);
+            this.requests = new TableRequests();
             if (result.Any())
             {
                 result.Add("Please enjoy your meal!");

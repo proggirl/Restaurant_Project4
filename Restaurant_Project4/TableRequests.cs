@@ -11,41 +11,39 @@ namespace Restaurant_Project4
     {
         Dictionary<string, List<IItemInterface>> menuItems = new Dictionary<string, List<IItemInterface>>();
 
-        public void Add<T>(string customer) 
+        public void Add<T>(string customer)where T: IItemInterface
         { 
-            List<IItemInterface> list = new List<IItemInterface>();
-            bool cs = menuItems.TryGetValue(customer,out list);
-           
-            if (cs)
+             List<IItemInterface> list = new List<IItemInterface>();
+            if (menuItems.ContainsKey(customer))
             {
+                foreach(var dict in menuItems)
+                {
+                    if (dict.Key == customer)
+                        list.AddRange(dict.Value);
+                }
                 menuItems.Remove(customer);
             }
-            else
-            {
-                list = new List<IItemInterface>();
-            }
-            var item = Activator.CreateInstance(typeof(T)); 
-           
+            
+            var item = Activator.CreateInstance(typeof(T));
+
             list.Add(item as IItemInterface);
 
             menuItems.Add(customer, list);
         }
+
         public List<IItemInterface> this[string i] {get => GetMenuItemsCustomer(i);}
       
-        public ICollection<T> Get<T>()
-
-        {
+        public ICollection<T> Get<T>()where T : IItemInterface
+        { 
             ICollection<T> list = new Collection<T>();
            
-            foreach(var item in menuItems)
-            {
-                var t = item.Value.Where(x => x.GetType() == typeof(T)).ToList();
-              
-                foreach (var i in t )
+            foreach(var item in menuItems.Values)              
+                foreach (var i in item)
                 {
-                    list.Add((T)i);
+                    if(i is T)
+                        list.Add((T)i);
                 }
-            }
+            
             return list;
         }
        
